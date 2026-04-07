@@ -25,6 +25,41 @@
             </div>
             @endif
 
+            <div class="mb-8 bg-black rounded-3xl shadow-lg p-6 sm:p-8 text-white flex flex-col md:flex-row md:items-center justify-between overflow-hidden relative">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-5 rounded-full blur-2xl"></div>
+                <div class="absolute right-20 -bottom-10 w-32 h-32 bg-white opacity-5 rounded-full blur-xl"></div>
+                
+                <div class="relative z-10 w-full md:w-1/2">
+                    <p class="text-gray-400 text-xs sm:text-sm font-bold uppercase tracking-widest mb-1 sm:mb-2">Total Buku Aktif</p>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-5xl sm:text-6xl font-black leading-none">
+                            {{ $peminjaman->whereIn('status', ['menunggu', 'dipinjam'])->count() }}
+                        </h3>
+                        <span class="text-lg sm:text-xl font-medium text-gray-300">/ 3 Buku</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-gray-400 mt-3 sm:mt-4">
+                        Kamu memiliki sisa kuota pinjam sebanyak <strong>{{ 3 - $peminjaman->whereIn('status', ['menunggu', 'dipinjam'])->count() }}</strong> buku lagi.
+                    </p>
+                </div>
+
+                <div class="relative z-10 w-full md:w-1/2 mt-6 md:mt-0 bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-3">Daftar Buku Kamu:</p>
+                    <ul class="space-y-2">
+                        @forelse($peminjaman->whereIn('status', ['menunggu', 'dipinjam']) as $active)
+                            <li class="flex items-start gap-3">
+                                <div class="mt-1 flex-shrink-0 w-2 h-2 rounded-full {{ $active->status == 'dipinjam' ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]' : 'bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]' }}"></div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold leading-tight line-clamp-1">{{ $active->buku->judul }}</span>
+                                    <span class="text-[10px] text-gray-500 italic">{{ $active->status == 'dipinjam' ? 'Sudah ditangan' : 'Menunggu admin' }}</span>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="text-xs text-gray-500 italic">Belum ada buku yang aktif dipinjam.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-gray-100 p-4 sm:p-8">
                 
                 @if($peminjaman->isEmpty())
@@ -111,7 +146,6 @@
                         </table>
                     </div>
                 @endif
-
             </div>
         </div>
     </div>

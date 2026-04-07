@@ -13,22 +13,31 @@ class PeminjamanController extends Controller
     public function store(Request $request, $id)
     {
         $buku = Buku::findOrFail($id);
+        $userId = Auth::id();
 
-        // CEK VALIDASI: Apakah siswa sudah meminjam atau sedang menunggu persetujuan buku ini?
-        $sudahAda = Peminjaman::where('user_id', Auth::id())
-                            ->where('buku_id', $id)
-                            ->whereIn('status', ['menunggu', 'dipinjam'])
-                            ->exists();
+        // 1. CEK LIMIT BUKU: Apakah siswa sudah meminjam/menunggu maksimal 3 buku?
+        $jumlahPinjamanAktif = Peminjaman::where('user_id', $userId)
+            ->whereIn('status', ['menunggu', 'dipinjam'])
+            ->count();
+
+        if ($jumlahPinjamanAktif >= 3) {
+            return redirect()->back()->with('error', 'Gagal meminjam! Kamu sudah mencapai batas maksimal peminjaman (3 buku).');
+        }
+
+        // 2. CEK VALIDASI BUKU SAMA: Apakah siswa sudah meminjam atau sedang menunggu persetujuan buku ini?
+        $sudahAda = Peminjaman::where('user_id', $userId)
+            ->where('buku_id', $id)
+            ->whereIn('status', ['menunggu', 'dipinjam'])
+            ->exists();
 
         if ($sudahAda) {
             return redirect()->back()->with('error', 'Gagal! Kamu sedang meminjam atau menunggu konfirmasi untuk buku ini.');
         }
 
-        // CEK STOK: Kalau belum pinjam, pastikan stok masih ada
+        // 3. CEK STOK: Kalau belum pinjam, pastikan stok masih ada
         if ($buku->stok > 0) {
-            
             Peminjaman::create([
-                'user_id' => Auth::id(),
+                'user_id' => $userId,
                 'buku_id' => $id,
                 'status' => 'menunggu' // Status awalnya 'menunggu', bukan langsung 'dipinjam'
             ]);
@@ -44,7 +53,7 @@ class PeminjamanController extends Controller
     // 2. SISWA: Tampilkan Halaman Peminjaman Saya
     public function index()
     {
-        // Tampilkan yang statusnya 'menunggu' ATAU 'dipinjam' biar siswa tahu progresnya
+        // Tampilkan yang statusnya 'menunggu' ATAU 'dipinjam' biar sis         wa tahu progresnya
         $peminjaman = Peminjaman::with('buku')
                         ->where('user_id', Auth::id())
                         ->orderBy('id', 'desc')

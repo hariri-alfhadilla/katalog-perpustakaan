@@ -25,6 +25,14 @@
             </div>
             @endif
 
+            @php
+                $activePeminjaman = \App\Models\Peminjaman::with('buku')
+                    ->where('user_id', auth()->id())
+                    ->whereIn('status', ['menunggu', 'dipinjam'])
+                    ->get();
+                $jumlahAktif = $activePeminjaman->count();
+            @endphp
+
             <div class="mb-8 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col lg:flex-row justify-between items-center gap-4">
                 <div class="w-full lg:w-1/3">
                     <h3 class="text-lg font-bold text-gray-900">Temukan Buku Favoritmu</h3>
@@ -85,8 +93,8 @@
                             <form action="{{ route('peminjaman.store', $item->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" 
-                                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-colors {{ $item->stok > 0 ? 'bg-black text-white hover:bg-gray-800 active:scale-95 shadow-md' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }}"
-                                    {{ $item->stok <= 0 ? 'disabled' : '' }}>
+                                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-colors {{ $item->stok > 0 && $jumlahAktif < 3 ? 'bg-black text-white hover:bg-gray-800 active:scale-95 shadow-md' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }}"
+                                    {{ $item->stok <= 0 || $jumlahAktif >= 3 ? 'disabled' : '' }}>
                                     Pinjam
                                 </button>
                             </form>
