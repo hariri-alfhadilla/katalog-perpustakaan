@@ -15,10 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('buku_id')->constrained('buku')->onDelete('cascade');
-            
-            // TAMBAHIN ->nullable() DI BARIS INI:
             $table->date('tanggal_peminjaman')->nullable(); 
-            
             $table->date('tanggal_pengembalian')->nullable();
             $table->enum('status', ['menunggu', 'dipinjam', 'dikembalikan', 'ditolak'])->default('menunggu');
             $table->timestamps();

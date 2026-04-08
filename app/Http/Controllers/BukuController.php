@@ -10,7 +10,6 @@ class BukuController extends Controller
 {
     public function index()
     {
-        // Hapus with('category')
         $buku = Buku::latest()->get();
         return view('admin.buku.index', compact('buku'));
     }

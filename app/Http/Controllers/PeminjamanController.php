@@ -9,13 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class PeminjamanController extends Controller
 {
-    // 1. SISWA: Mengajukan Peminjaman
     public function store(Request $request, $id)
     {
         $buku = Buku::findOrFail($id);
         $userId = Auth::id();
 
-        // 1. CEK LIMIT BUKU: Apakah siswa sudah meminjam/menunggu maksimal 3 buku?
         $jumlahPinjamanAktif = Peminjaman::where('user_id', $userId)
             ->whereIn('status', ['menunggu', 'dipinjam'])
             ->count();
@@ -24,7 +22,6 @@ class PeminjamanController extends Controller
             return redirect()->back()->with('error', 'Gagal meminjam! Kamu sudah mencapai batas maksimal peminjaman (3 buku).');
         }
 
-        // 2. CEK VALIDASI BUKU SAMA: Apakah siswa sudah meminjam atau sedang menunggu persetujuan buku ini?
         $sudahAda = Peminjaman::where('user_id', $userId)
             ->where('buku_id', $id)
             ->whereIn('status', ['menunggu', 'dipinjam'])
@@ -34,15 +31,12 @@ class PeminjamanController extends Controller
             return redirect()->back()->with('error', 'Gagal! Kamu sedang meminjam atau menunggu konfirmasi untuk buku ini.');
         }
 
-        // 3. CEK STOK: Kalau belum pinjam, pastikan stok masih ada
         if ($buku->stok > 0) {
             Peminjaman::create([
                 'user_id' => $userId,
                 'buku_id' => $id,
-                'status' => 'menunggu' // Status awalnya 'menunggu', bukan langsung 'dipinjam'
+                'status' => 'menunggu'
             ]);
-
-            // STOK JANGAN DIKURANGI DULU DI SINI
 
             return redirect()->back()->with('success', 'Permintaan terkirim! Silakan tunggu admin menyetujui peminjamanmu.');
         }
@@ -50,10 +44,8 @@ class PeminjamanController extends Controller
         return redirect()->back()->with('error', 'Maaf, stok buku habis.');
     }
 
-    // 2. SISWA: Tampilkan Halaman Peminjaman Saya
     public function index()
     {
-        // Tampilkan yang statusnya 'menunggu' ATAU 'dipinjam' biar sis         wa tahu progresnya
         $peminjaman = Peminjaman::with('buku')
                         ->where('user_id', Auth::id())
                         ->orderBy('id', 'desc')
@@ -62,44 +54,37 @@ class PeminjamanController extends Controller
         return view('user.peminjaman', compact('peminjaman'));
     }
 
-    // 3. SISWA: Proses Pengembalian Buku
     public function returnBook($id)
     {
         $pinjam = Peminjaman::findOrFail($id);
 
-        // Ubah status dan tanggal kembali
         $pinjam->update([
             'status' => 'dikembalikan',
             'tanggal_pengembalian' => now(),
         ]);
 
-        // Kembalikan stok buku
         $pinjam->buku->increment('stok');
 
         return redirect()->back()->with('success', 'Buku berhasil dikembalikan!');
     }
 
-    // 4. ADMIN: Tampilkan Semua Riwayat Peminjaman
     public function adminIndex()
     {
         $peminjaman = Peminjaman::with(['user', 'buku'])->orderBy('id', 'desc')->get();
         return view('admin.peminjaman.index', compact('peminjaman'));
     }
 
-    // 5. ADMIN: Terima Peminjaman (FUNGSI BARU)
     public function terima($id)
     {
         $pinjam = Peminjaman::findOrFail($id);
         $buku = Buku::findOrFail($pinjam->buku_id);
 
-        // Cek lagi stoknya, jaga-jaga kalau stok keburu habis dipinjam orang lain
         if ($buku->stok > 0) {
             $pinjam->update([
                 'status' => 'dipinjam',
-                'tanggal_peminjaman' => now(), // Tanggal peminjaman baru dicatat saat disetujui
+                'tanggal_peminjaman' => now(),
             ]);
 
-            // Kurangi stok buku
             $buku->decrement('stok');
 
             return redirect()->back()->with('success', 'Peminjaman berhasil disetujui!');
@@ -108,14 +93,12 @@ class PeminjamanController extends Controller
         return redirect()->back()->with('error', 'Gagal disetujui! Stok buku ternyata sudah habis.');
     }
 
-    // 6. ADMIN: Tolak Peminjaman (FUNGSI BARU)
     public function tolak($id)
     {
         $pinjam = Peminjaman::findOrFail($id);
 
         $pinjam->update([
             'status' => 'ditolak',
-            // Tanggal peminjaman biarkan kosong karena tidak jadi dipinjam
         ]);
 
         return redirect()->back()->with('success', 'Permintaan peminjaman telah ditolak.');
