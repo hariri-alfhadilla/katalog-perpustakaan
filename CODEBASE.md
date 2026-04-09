@@ -1,8 +1,5 @@
 # CODEBASE.md — Peta Dependensi File BoBooks
 
-> File ini digunakan oleh AI Agent untuk memahami ketergantungan antar file sebelum melakukan modifikasi.
-> **Sebelum mengubah file apapun, periksa tabel ini.**
-
 ---
 
 ## 🗂 Index File Utama
