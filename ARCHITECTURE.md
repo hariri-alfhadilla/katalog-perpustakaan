@@ -354,16 +354,3 @@ Frontend
 ```
 
 ---
-
-## 🗺 Agents & Skills Map
-
-> Untuk konteks AI Agent:
-
-| Perubahan | Agent | Skill |
-|---|---|---|
-| UI/UX Blade views | `frontend-specialist` | `frontend-design`, `tailwind-patterns` |
-| Backend logic controller/model | `backend-specialist` | `api-patterns`, `database-design` |
-| Auth & security | `security-auditor` | `vulnerability-scanner` |
-| Testing | `backend-specialist` | `testing-patterns`, `tdd-workflow` |
-| Database & migration | `backend-specialist` | `database-design` |
-| Deployment | `backend-specialist` | `deployment-procedures` |
