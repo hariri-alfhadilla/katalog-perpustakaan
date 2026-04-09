@@ -1,10 +1,5 @@
 # ARCHITECTURE.md — Arsitektur Sistem BoBooks
 
-> Dokumen ini menjelaskan keputusan arsitektur, pola desain, dan bagaimana setiap bagian sistem saling terhubung.
-> Dibaca oleh AI Agent sebelum melakukan perubahan struktural.
-
----
-
 ## 📐 Overview Arsitektur
 
 BoBooks adalah aplikasi **monolitik full-stack** yang mengikuti pola **MVC (Model-View-Controller)** bawaan Laravel. Tidak ada API terpisah — semua request menghasilkan response HTML melalui Blade template.
