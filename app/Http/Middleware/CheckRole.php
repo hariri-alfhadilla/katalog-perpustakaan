@@ -11,7 +11,6 @@ class CheckRole
 {
     public function handle(Request $request, Closure $next, $role): Response
     {
-        // Kita ganti auth()->check() menjadi Auth::check()
         if (!Auth::check() || Auth::user()->role !== $role) {
             abort(403, 'Anda tidak punya akses ke halaman ini.');
         }
